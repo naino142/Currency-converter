@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import Axios from 'axios';
 import Dropdown from 'react-dropdown';
-// import { HiSwitchHorizontal } from 'react-icons/hi';
 import 'react-dropdown/style.css';
 import './App.css';
   
@@ -9,17 +8,17 @@ function App() {
   
   // Initializing all the state variables 
   const [info, setInfo] = useState([]);
-  const [input, setInput] = useState(0);
+  const [input, setInput] = useState("");
   const [from, setFrom] = useState("usd");
   const [to, setTo] = useState("inr");
   const [options, setOptions] = useState([]);
-  const [output, setOutput] = useState(0);
+  const [output, setOutput] = useState("");
   
   // Calling the api whenever the dependency changes
   useEffect(() => {
     Axios.get(
-`https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/${from}.json`)
-   .then((res) => {
+      `https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/${from}.json`)
+    .then((res) => {
       setInfo(res.data[from]);
     })
   }, [from]);
@@ -33,8 +32,12 @@ function App() {
     
   // Function to convert the currency
   function convert() {
+    if (input === "" || isNaN(input)) {
+      setOutput("Click convert");
+      return;
+    }
     var rate = info[to];
-    setOutput(input * rate);
+    setOutput(parseFloat(input) * rate);
   }
   
   // Function to switch between two currency
@@ -42,6 +45,7 @@ function App() {
     var temp = from;
     setFrom(to);
     setTo(temp);
+    convert();
   }
 
   return (
@@ -55,8 +59,9 @@ function App() {
         <div className="left">
           <h3>Amount</h3>
           <input type="text" 
-             placeholder="Enter the amount" 
-             onChange={(e) => setInput(e.target.value)} />
+             placeholder="Enter the amount in numbers or decimal" 
+             value={input}
+             onChange={(e) => setInput(e.target.value.replace(/[^0-9.]/g, ''))} />
         </div>
         <div className="middle">
           <h3>From</h3>
@@ -65,8 +70,7 @@ function App() {
           value={from} placeholder="From" />
         </div>
         <div className="switch">
-          {/* <HiSwitchHorizontal size="30px" 
-                        onClick={() => { flip()}}/> */}
+          <button onClick={() => { flip() }}>Switch</button>
         </div>
         <div className="right">
           <h3>To</h3>
@@ -76,10 +80,9 @@ function App() {
         </div>
       </div>
       <div className="result">
-        <button onClick={()=>{convert()}}>Convert</button>
+        <button onClick={() => { convert() }}>Convert</button>
         <h2>Converted Amount:</h2>
-        <p>{input+" "+from+" = "+output.toFixed(5) + " " + to}</p>
-  
+        <p>{input === "" ? "" : input + " " + from + " = " + (output === "Click convert" ? output : output.toFixed(5) + " " + to)}</p>
       </div>
     </div>
   );
